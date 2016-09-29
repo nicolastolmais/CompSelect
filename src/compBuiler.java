@@ -75,7 +75,8 @@ public class compBuiler {
 		String ban = input.nextLine();
 		while(champCheck == false){
 			ban = checkIfBanned(input, bans, ban);
-			ban = checkIfChampion(input, ban);		
+			ban = checkIfChampion(input, ban);
+			champCheck = true;
 		}
 		champCheck = false;
 		System.out.println("The bans are ");
@@ -113,7 +114,7 @@ public class compBuiler {
 
 
 	private static String checkIfChampion(Scanner input, String champ) throws RiotApiException {
-		if(checkLeagueIfReal(champ) == true){
+		if(checkIfLeagueChampion(champ) == true){
 		} else {
 			System.out.println("Not a champion. Pick again.");
 			champ = input.nextLine();
@@ -157,6 +158,26 @@ public class compBuiler {
         }
         return champMatch;
         
+	}
+	
+	public static boolean checkIfLeagueChampion(String champ)  {
+		ArrayList<String> champList = new ArrayList<String>();
+		champList.add("Aatrox");
+		champList.add("Ahri");
+		champList.add("Akali");
+		champList.add("Alistar");
+		champList.add("Amumu");
+		champList.add("Anivia");
+		champList.add("Annie");
+		champList.add("Ashe");
+		champList.add("A");
+		
+		for(int i = 0; i < champList.size(); i++){
+			if(champ.equals(champList.get(i))){
+				return true;
+			}
+		}
+		return false;
 	}
 }
 
