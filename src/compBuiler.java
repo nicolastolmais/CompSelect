@@ -63,8 +63,8 @@ public class compBuiler {
 			} else {
 				teamTwoBans.addBannedChampion(ban);
 			}
-			teamOneBans.toString();
-			teamTwoBans.toString();
+			System.out.print(teamOneBans.toString());
+			System.out.print(teamTwoBans.toString());
 			System.out.println();
 		}
 		//pics
@@ -72,74 +72,9 @@ public class compBuiler {
 		{
 			if(i == 0 || i == 3 || i == 4 || i == 7 || i == 8 || i == 10)
 			{
-				System.out.println("Pick a Champion.");
-				String champ = input.nextLine();
-				boolean champCheck = false;
-				while(champCheck  == false){
-					for(int j = 0; j< bans.size();j++){
-						if(bans.get(j) == champ)
-						{
-							System.out.println("Champion already banned. Pick again.");
-							champ = input.nextLine();
-						}
-					}
-					for(int j = 0; j< pics.size();j++){
-						if(pics.get(j) == champ)
-						{
-							System.out.println("Champion already picked. Pick again.");
-							champ = input.nextLine();
-						}
-					}
-					if(checkIfChamp(champ) == true){
-						pics.add(champ);
-						team1.add(champ);
-						champCheck = true;
-					} else {
-						System.out.println("Not a champion. Pick again.");
-						champ = input.nextLine();
-					}
-				}
-				champCheck = false;
-				System.out.println("The pics are ");
-				for(String s : pics)
-				{
-					System.out.println(s);
-				}
+				PickChampion(input, bans, pics, team1);
 			} else {
-				System.out.println("Pick a Champion.");
-				String champ = input.nextLine();
-				boolean champCheck = false;
-				while(champCheck  == false){
-					for(int j = 0; j< bans.size();j++){
-						if(bans.get(j) == champ)
-						{
-							System.out.println("Champion already banned. Pick again.");
-							champ = input.nextLine();
-						}
-					}
-					for(int j = 0; j< pics.size();j++){
-						if(pics.get(j) == champ)
-						{
-							System.out.println("Champion already picked. Pick again.");
-							champ = input.nextLine();
-						}
-					}
-					if(checkIfChamp(champ) == true){
-						pics.add(champ);
-						team2.add(champ);
-						champCheck = true;
-					} else {
-						System.out.println("Not a champion. Pick again.");
-						champ = input.nextLine();
-					}
-				}
-				champCheck = false;
-				System.out.println("The pics are ");
-				for(String s : pics)
-				{
-					System.out.print(s + ", ");
-				}
-				System.out.println();
+				PickChampion(input, bans, pics, team2);
 			}
 		}
 		System.out.println();
@@ -150,7 +85,7 @@ public class compBuiler {
 			System.out.println(s);
 		}
 		System.out.println("Bans:");
-		teamOneBans.toString();
+		System.out.print(teamOneBans.toString());
 		System.out.println();
 		System.out.println("Blue side: ");
 		for(String s : team2)
@@ -158,7 +93,54 @@ public class compBuiler {
 			System.out.println(s);
 		}
 		System.out.println("Bans:");
-		teamTwoBans.toString();
+		System.out.print(teamTwoBans.toString());
+	}
+
+	private static void PickChampion(Scanner input, ArrayList<String> bans, ArrayList<String> pics,
+			ArrayList<String> team1) throws RiotApiException {
+		System.out.println("Pick a Champion.");
+		String champ = input.nextLine();
+		boolean champCheck = false;
+		while(champCheck  == false){
+			champ = checkIfBanned(input, bans, champ);
+			champ = checkIfPicked(input, pics, champ);
+			if(checkIfChamp(champ) == true){
+				pics.add(champ);
+				team1.add(champ);
+				champCheck = true;
+			} else {
+				System.out.println("Not a champion. Pick again.");
+				champ = input.nextLine();
+			}
+		}
+		champCheck = false;
+		System.out.println("The pics are ");
+		for(String s : pics)
+		{
+			System.out.println(s);
+		}
+	}
+
+	private static String checkIfPicked(Scanner input, ArrayList<String> pics, String champ) {
+		for(int j = 0; j< pics.size();j++){
+			if(pics.get(j) == champ)
+			{
+				System.out.println("Champion already picked. Pick again.");
+				champ = input.nextLine();
+			}
+		}
+		return champ;
+	}
+
+	private static String checkIfBanned(Scanner input, ArrayList<String> bans, String champ) {
+		for(int j = 0; j< bans.size();j++){
+			if(bans.get(j) == champ)
+			{
+				System.out.println("Champion already banned. Pick again.");
+				champ = input.nextLine();
+			}
+		}
+		return champ;
 	}
 	
 	public static boolean checkIfChamp(String isChamp) throws RiotApiException{
