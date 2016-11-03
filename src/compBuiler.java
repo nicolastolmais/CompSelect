@@ -17,167 +17,148 @@ public class compBuiler {
 
 	public static void main(String[] args) throws RiotApiException {
 		
+		
 		Scanner input = new Scanner(System.in);
-		ArrayList<String> bans = new ArrayList<String>();
-		ArrayList<String> pics = new ArrayList<String>();
-		Bans teamOneBans = new Bans();
-		Bans teamTwoBans = new Bans();
-		Team teamOne = new Team();
-		Team teamTwo = new Team();
+		
+		ArrayList<String> allChamps = new ArrayList<String>();
+		ArrayList<String> bannedChampions = new ArrayList<String>();
+		ArrayList<String> pickedChampions = new ArrayList<String>();
+		Team teamOneChampions = new Team("Purple Side ");
+		Team teamTwoChampions = new Team("Red Side ");		
+	
+		//setup
+		allChamps = getAllChampionsFromRiot();
 		
 		
 		System.out.println("Welcome to COMP SELECT");
 		System.out.println();
-		//bans
 		
+		
+		//banning phase
 		
 		for (int i = 0; i<6; i++)
 		{
-			if(i == 0 || i == 2 || i == 4){
-				banChampion(input, teamOneBans, bans);
-			} else {
-				banChampion(input, teamTwoBans, bans);
+			System.out.println("Ban a Champion.");
+			
+			String ban = chooseChampion(input);
+			boolean check = false;
+			
+			check = championCheck(ban, bannedChampions, pickedChampions, allChamps);
+			while(check == false){
+				ban = chooseChampion(input);
+				check = championCheck(ban, bannedChampions, pickedChampions, allChamps);
 			}
+			
+			
+			if(i == 0 || i == 2 || i == 4){
+				teamOneChampions.addBan(ban);
+			} else {
+				teamTwoChampions.addBan(ban);
+			}
+			
+			bannedChampions.add(ban);
+			
+			System.out.println(teamOneChampions.toString());
+			System.out.println(teamTwoChampions.toString());
+			
 		}
 		
-		
-		//pics
+		//picking phase
 		for (int i = 0; i<10; i++)
 		{
-			if(i == 0 || i == 3 || i == 4 || i == 7 || i == 8 || i == 10)
-			{
-				PickChampion(input, bans, pics, teamOne.getTeamChampions());
-			} else {
-				PickChampion(input, bans, pics, teamTwo.getTeamChampions());
+			System.out.println("Pick a Champion.");
+			
+			String pick = chooseChampion(input);
+			boolean check = false;
+			
+			check = championCheck(pick, bannedChampions, pickedChampions, allChamps);
+			while(check == false){
+				pick = chooseChampion(input);
+				check = championCheck(pick, bannedChampions, pickedChampions, allChamps);
 			}
+			
+			if(i == 0 || i == 2 || i == 4 || i == 6 || i == 8){
+				teamOneChampions.addChampion(pick);
+			} else {
+				teamTwoChampions.addChampion(pick);
+			}
+			
+			pickedChampions.add(pick);
+			System.out.println(teamOneChampions.toString());
+			System.out.println(teamTwoChampions.toString());
 		}
-		System.out.println();
+		
 		
 		
 		//Printing the teams
-		System.out.println("Purple side: ");
-		System.out.println(teamOne.getTeamChampions().toString());
-		System.out.println("Bans:");
-		System.out.print(teamOneBans.toString());
 		System.out.println();
-		System.out.println("Blue side: ");
-		System.out.println(teamTwo.getTeamChampions().toString());
-		System.out.println("Bans:");
-		System.out.print(teamTwoBans.toString());
+		System.out.println(teamOneChampions.toString());
+		System.out.println(teamTwoChampions.toString());
+
 	}
 
 	
-
-
-	private static void banChampion(Scanner input, Bans teamOneBans, ArrayList<String> bans ) throws RiotApiException {
-		boolean champCheck = false;
-		System.out.println("Ban a Champion.");
-		String ban = input.nextLine();
-		while(champCheck == false){
-			ban = checkIfBanned(input, bans, ban);
-			ban = checkIfChampion(input, ban);
-			champCheck = true;
-		}
-		champCheck = false;
-		System.out.println("The bans are ");
-		teamOneBans.addBannedChampion(ban);
-		System.out.print(teamOneBans.toString());
-		System.out.println();
+	private static String chooseChampion(Scanner input){
+		String champion = input.nextLine();
+		return champion;
 	}
-
-
-
-
 	
-	private static void PickChampion(Scanner input, ArrayList<String> bans, ArrayList<String> pics,
-			ArrayList<String> team1) throws RiotApiException {
-		System.out.println("Pick a Champion.");
-		String champ = input.nextLine();
-		boolean champCheck = false;
-		while(champCheck  == false){
-			champ = checkIfBanned(input, bans, champ);
-			champ = checkIfPicked(input, pics, champ);
-			champ = checkIfChampion(input, champ);
-			pics.add(champ);
-			team1.add(champ);
-			champCheck = true;
-			
-		}
-		champCheck = false;
-		System.out.println("The pics are ");
-		for(String s : pics)
-		{
-			System.out.println(s);
-		}
-	}
+	private static boolean championCheck(String possibleChampion, ArrayList<String> bannedChampions, ArrayList<String> pickedChampions, ArrayList<String> allChampions ){
+		
+		boolean banned = checkIfBanned(possibleChampion, bannedChampions);
+		boolean picked = checkIfPicked(possibleChampion, pickedChampions);
+		boolean isChampion = checkIfChampion(possibleChampion, allChampions);
 
-
-
-	private static String checkIfChampion(Scanner input, String champ) throws RiotApiException {
-		if(checkIfLeagueChampion(champ) == true){
+		if(banned == false && picked == false && isChampion == true){
+			return true;
 		} else {
-			System.out.println("Not a champion. Pick again.");
-			champ = input.nextLine();
+			System.out.println("Champion picked or banned or not a real. Pick Again");
+			return false;
 		}
-		return champ;
-	}
-
-	private static String checkIfPicked(Scanner input, ArrayList<String> pics, String champ) {
-		for(int j = 0; j< pics.size();j++){
-			if(pics.get(j) == champ)
-			{
-				System.out.println("Champion already picked. Pick again.");
-				champ = input.nextLine();
-			}
-		}
-		return champ;
-	}
-
-	private static String checkIfBanned(Scanner input, ArrayList<String> bans, String champ) {
-		for(int j = 0; j< bans.size();j++){
-			if(bans.get(j) == champ)
-			{
-				System.out.println("Champion already banned. Pick again.");
-				champ = input.nextLine();
-			}
-		}
-		return champ;
 	}
 	
-	public static boolean checkLeagueIfReal(String isChamp) throws RiotApiException{
-		boolean champMatch = false;
-		RiotApi api = new RiotApi("9e77d1de-7d58-43e9-91b5-5c07b91828fe");
-        ChampionList champlist = api.getChampions();
-        List<net.rithms.riot.dto.Champion.Champion> clist = champlist.getChampions();
-        for(net.rithms.riot.dto.Champion.Champion c : clist){
-        	String realChamp = api.getDataChampion((int) c.getId()).getName();
-        	if(realChamp.equals(isChamp)){
-        		champMatch = true;
-        		break;
+	
+	private static boolean checkIfPicked(String isChamp, ArrayList<String> pickedChampions){
+        for(String champion : pickedChampions){
+        	if(champion.equals(isChamp)){
+        		return true;
         	}
         }
-        return champMatch;
-        
+        return false;
 	}
 	
-	public static boolean checkIfLeagueChampion(String champ)  {
-		ArrayList<String> champList = new ArrayList<String>();
-		champList.add("Aatrox");
-		champList.add("Ahri");
-		champList.add("Akali");
-		champList.add("Alistar");
-		champList.add("Amumu");
-		champList.add("Anivia");
-		champList.add("Annie");
-		champList.add("Ashe");
-		champList.add("A");
-		
-		for(int i = 0; i < champList.size(); i++){
-			if(champ.equals(champList.get(i))){
-				return true;
-			}
-		}
-		return false;
+	
+	private static boolean checkIfBanned(String isChamp, ArrayList<String> bannedChampions){
+        for(String champion : bannedChampions){
+        	if(champion.equals(isChamp)){
+        		return true;
+        	}
+        }
+        return false;
+	}
+	
+	
+	
+	private static boolean checkIfChampion(String isChamp, ArrayList<String> allChampions){
+        for(String champion : allChampions){
+        	if(champion.equals(isChamp)){
+        		return true;
+        	}
+        }
+        return false;
+	}
+	
+	private static ArrayList<String> getAllChampionsFromRiot() throws RiotApiException    {
+	    ArrayList<String> allChampions = new ArrayList<String>();
+	    
+	    RiotApi api = new RiotApi("9e77d1de-7d58-43e9-91b5-5c07b91828fe");
+	    ChampionList champlist = api.getChampions();
+	    List<net.rithms.riot.dto.Champion.Champion> championList = champlist.getChampions();
+	    for(net.rithms.riot.dto.Champion.Champion c : championList){
+        	String champion = api.getDataChampion((int) c.getId()).getName();
+        	allChampions.add(champion);
+        } 
+	    return(allChampions);
 	}
 }
 
