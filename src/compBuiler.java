@@ -5,11 +5,21 @@ import java.util.Map;
 
 import net.rithms.riot.constant.Region;
 import net.rithms.riot.constant.Season;
-import net.rithms.riot.dto.Champion.Champion;
-import net.rithms.riot.dto.Champion.ChampionList;
+import net.rithms.riot.constant.staticdata.ChampData;
+//import net.rithms.riot.dto.Champion.Champion;
+//import net.rithms.riot.dto.Champion.ChampionList;
 import net.rithms.riot.dto.Summoner.Summoner;
 import net.rithms.riot.api.RiotApi;
 import net.rithms.riot.api.RiotApiException;
+
+import net.rithms.riot.api.RiotApi;
+import net.rithms.riot.api.RiotApiException;
+import net.rithms.riot.constant.Region;
+import net.rithms.riot.constant.staticdata.ChampData;
+import net.rithms.riot.dto.Static.Champion;
+import net.rithms.riot.dto.Static.ChampionList;
+import net.rithms.riot.dto.Static.Skin;
+import net.rithms.riot.dto.Static.*;
 
 import com.google.gson.*;
 
@@ -27,8 +37,8 @@ public class compBuiler {
 		Team teamTwoChampions = new Team("Red Side ");		
 	
 		//setup
-		allChamps = getAllChampionsFromRiot();
-		
+
+		allChamps = getAllChampionData();
 		
 		System.out.println("Welcome to COMP SELECT");
 		System.out.println();
@@ -89,12 +99,31 @@ public class compBuiler {
 		}
 		
 		
+		System.out.println("Preparing Stats");
+		
+		
+		//After select
+		for(String champion : teamOneChampions.getTeamChampions()){	
+			teamOneChampions.addTeamAttributes(getChampionTag(champion));
+		}
+		for(String champion : teamTwoChampions.getTeamChampions()){	
+			teamTwoChampions.addTeamAttributes(getChampionTag(champion));
+		}
+		
 		
 		//Printing the teams
 		System.out.println();
 		System.out.println(teamOneChampions.toString());
+		System.out.println("Missing Attributes: ");
+		System.out.print(teamOneChampions.findMissingAttributes());
+		System.out.println();
+		System.out.println();
 		System.out.println(teamTwoChampions.toString());
-
+		System.out.print("Missing Attributes: ");
+		System.out.print(teamTwoChampions.findMissingAttributes());
+		System.out.println();
+		System.out.println();
+		System.out.println("Program End");
 	}
 
 	
@@ -107,7 +136,7 @@ public class compBuiler {
 		
 		boolean banned = checkIfBanned(possibleChampion, bannedChampions);
 		boolean picked = checkIfPicked(possibleChampion, pickedChampions);
-		boolean isChampion = checkIfChampion(possibleChampion, allChampions);
+		boolean isChampion = checkIfLeagueChampion(possibleChampion, allChampions);
 
 		if(banned == false && picked == false && isChampion == true){
 			return true;
@@ -138,8 +167,7 @@ public class compBuiler {
 	}
 	
 	
-	
-	private static boolean checkIfChampion(String isChamp, ArrayList<String> allChampions){
+	private static boolean checkIfLeagueChampion(String isChamp, ArrayList<String> allChampions){
         for(String champion : allChampions){
         	if(champion.equals(isChamp)){
         		return true;
@@ -148,17 +176,41 @@ public class compBuiler {
         return false;
 	}
 	
-	private static ArrayList<String> getAllChampionsFromRiot() throws RiotApiException    {
-	    ArrayList<String> allChampions = new ArrayList<String>();
-	    
-	    RiotApi api = new RiotApi("9e77d1de-7d58-43e9-91b5-5c07b91828fe");
-	    ChampionList champlist = api.getChampions();
-	    List<net.rithms.riot.dto.Champion.Champion> championList = champlist.getChampions();
-	    for(net.rithms.riot.dto.Champion.Champion c : championList){
-        	String champion = api.getDataChampion((int) c.getId()).getName();
-        	allChampions.add(champion);
+	
+    public static ArrayList<String> getAllChampionData() throws RiotApiException {
+        // TODO Auto-generated method stub
+    	ArrayList<String> allChampions = new ArrayList<String>();
+    	
+    	RiotApi api = new RiotApi("9e77d1de-7d58-43e9-91b5-5c07b91828fe", Region.NA);
+        ChampionList championList = api.getDataChampionList(null, null, false, ChampData.TAGS);
+        for(Champion champion : championList.getData().values()) {
+            System.out.println(champion.getName());
+            allChampions.add(champion.getName());
+//            System.out.println(champion.getPartype());
+            for(String tag : champion.getTags()) {
+               System.out.println(tag.toString());
+            } System.out.println("======");
         } 
-	    return(allChampions);
-	}
+        return allChampions;
+    }
+    
+    public static String getChampionTag(String champ) throws RiotApiException {
+
+    	RiotApi api = new RiotApi("9e77d1de-7d58-43e9-91b5-5c07b91828fe", Region.NA);
+        ChampionList championList = api.getDataChampionList(null, null, false, ChampData.TAGS);
+        for(Champion champion : championList.getData().values()) {
+            if(champion.getName().equals(champ)){
+            	for(String tag : champion.getTags()) {
+            		System.out.println(tag.toString());
+            		return tag.toString();
+            	}
+            }
+        } 
+        return "";
+    }
+    
+    
+    
+	
 }
 
