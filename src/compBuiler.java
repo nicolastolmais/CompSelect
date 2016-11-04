@@ -16,9 +16,6 @@ import net.rithms.riot.api.RiotApi;
 import net.rithms.riot.api.RiotApiException;
 import net.rithms.riot.constant.Region;
 import net.rithms.riot.constant.staticdata.ChampData;
-import net.rithms.riot.dto.Static.Champion;
-import net.rithms.riot.dto.Static.ChampionList;
-import net.rithms.riot.dto.Static.Skin;
 import net.rithms.riot.dto.Static.*;
 
 import com.google.gson.*;
@@ -111,16 +108,54 @@ public class compBuiler {
 		}
 		
 		
+		for(String champion : teamOneChampions.getTeamChampions()){	
+			teamOneChampions.addAdStat(getChampionAttackStat(champion));
+		}
+		for(String champion : teamOneChampions.getTeamChampions()){	
+			teamOneChampions.addApStat(getChampionMagicStat(champion));
+		}
+		for(String champion : teamTwoChampions.getTeamChampions()){	
+			teamTwoChampions.addAdStat(getChampionAttackStat(champion));
+		}
+		for(String champion : teamTwoChampions.getTeamChampions()){	
+			teamTwoChampions.addApStat(getChampionMagicStat(champion));
+		}
+		
+		for(String champion : teamOneChampions.getTeamChampions()){	
+			teamOneChampions.addDefenseStat(getChampionMagicStat(champion));
+		}
+		for(String champion : teamTwoChampions.getTeamChampions()){	
+			teamTwoChampions.addDefenseStat(getChampionMagicStat(champion));
+		}
+		
+		for(String champion : teamOneChampions.getTeamChampions()){	
+			teamOneChampions.addMeleeChamp(checkIfMelee(champion));
+		}
+		for(String champion : teamTwoChampions.getTeamChampions()){	
+			teamTwoChampions.addMeleeChamp(checkIfMelee(champion));
+		}
+		
+		
 		//Printing the teams
 		System.out.println();
 		System.out.println(teamOneChampions.toString());
-		System.out.println("Missing Attributes: ");
-		System.out.print(teamOneChampions.findMissingAttributes());
+		System.out.println("Team Comp Tips: ");
+		System.out.println(teamOneChampions.findMissingAttributes());
+		System.out.println(teamOneChampions.adVSap());
+		System.out.println(teamOneChampions.attackVSdefense());
+		System.out.println(teamOneChampions.meleeVSrange());
+		
 		System.out.println();
 		System.out.println();
+		
 		System.out.println(teamTwoChampions.toString());
-		System.out.print("Missing Attributes: ");
-		System.out.print(teamTwoChampions.findMissingAttributes());
+		System.out.println();
+		System.out.println("Team Comp Tips: ");
+		System.out.println(teamTwoChampions.findMissingAttributes());
+		System.out.println(teamTwoChampions.adVSap());
+		System.out.println(teamTwoChampions.attackVSdefense());
+		System.out.println(teamTwoChampions.meleeVSrange());
+		
 		System.out.println();
 		System.out.println();
 		System.out.println("Program End");
@@ -184,12 +219,11 @@ public class compBuiler {
     	RiotApi api = new RiotApi("9e77d1de-7d58-43e9-91b5-5c07b91828fe", Region.NA);
         ChampionList championList = api.getDataChampionList(null, null, false, ChampData.TAGS);
         for(Champion champion : championList.getData().values()) {
-            System.out.println(champion.getName());
             allChampions.add(champion.getName());
 //            System.out.println(champion.getPartype());
-            for(String tag : champion.getTags()) {
-               System.out.println(tag.toString());
-            } System.out.println("======");
+//            for(String tag : champion.getTags()) {
+//               System.out.println(tag.toString());
+//            }
         } 
         return allChampions;
     }
@@ -201,7 +235,6 @@ public class compBuiler {
         for(Champion champion : championList.getData().values()) {
             if(champion.getName().equals(champ)){
             	for(String tag : champion.getTags()) {
-            		System.out.println(tag.toString());
             		return tag.toString();
             	}
             }
@@ -209,8 +242,56 @@ public class compBuiler {
         return "";
     }
     
+    public static int getChampionAttackStat(String champ) throws RiotApiException {
+
+    	RiotApi api = new RiotApi("9e77d1de-7d58-43e9-91b5-5c07b91828fe", Region.NA);
+        ChampionList championList = api.getDataChampionList(null, null, false, ChampData.INFO);
+        for(Champion champion : championList.getData().values()) {
+            if(champion.getName().equals(champ)){
+            	return champion.getInfo().getAttack();
+            }
+        } 
+        return 0;
+    }
     
+    public static int getChampionMagicStat(String champ) throws RiotApiException {
+
+    	RiotApi api = new RiotApi("9e77d1de-7d58-43e9-91b5-5c07b91828fe", Region.NA);
+        ChampionList championList = api.getDataChampionList(null, null, false, ChampData.INFO);
+        for(Champion champion : championList.getData().values()) {
+            if(champion.getName().equals(champ)){
+            	return champion.getInfo().getMagic();
+            }
+        } 
+        return 0;
+    }
     
+    public static int getChampionDefenseStat(String champ) throws RiotApiException {
+
+    	RiotApi api = new RiotApi("9e77d1de-7d58-43e9-91b5-5c07b91828fe", Region.NA);
+        ChampionList championList = api.getDataChampionList(null, null, false, ChampData.INFO);
+        for(Champion champion : championList.getData().values()) {
+            if(champion.getName().equals(champ)){
+            	return champion.getInfo().getDefense();
+            }
+        } 
+        return 0;
+    }
+    
+    public static boolean checkIfMelee(String champ) throws RiotApiException {
+
+    	RiotApi api = new RiotApi("9e77d1de-7d58-43e9-91b5-5c07b91828fe", Region.NA);
+        ChampionList championList = api.getDataChampionList(null, null, false, ChampData.STATS);
+        for(Champion champion : championList.getData().values()) {
+            if(champion.getName().equals(champ)){
+            	double champRange = champion.getStats().getAttackRange();
+            	if(champRange < 200){
+            		return true;
+            	}
+            }
+        } 
+        return false;
+    }  
 	
 }
 
